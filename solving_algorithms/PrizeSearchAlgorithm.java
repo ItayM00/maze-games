@@ -60,6 +60,7 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
         }
         
         System.out.println("Complete path calculated with " + fullPath.size() + " steps");
+        fullPath.addAll(findPath(mat, currentPosition, mat[0][0])); // using bfs to find exit after collecting all the prizes
         maze.setSolutionPath(fullPath);
     }
     
