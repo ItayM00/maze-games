@@ -61,7 +61,7 @@ public class GameFrame extends JFrame implements KeyListener{
         computerRow = mat.length - 1;
         computerCol = mat[0].length - 1;
 
-        timerDelay = 500;
+        timerDelay = 350;
 
         labelForMiniGame(maze);
 
@@ -125,14 +125,11 @@ public class GameFrame extends JFrame implements KeyListener{
             return;
         }
 
-        if(maze instanceof PrizeMaze) maze.setSolvingStrategy(new PrizeSearchAlgorithm());
         path = maze.getSolutionPath();
-        if(mode == PlayersType.COMPUTER_vs_COMPUTER) Collections.reverse(path); // becase one computer starts at the other side
-        
-        
-
+                
         if (mode == PlayersType.COMPUTER_vs_COMPUTER) {
-            maze.setSolvingStrategy(new BFSAlgorithm());             
+            Collections.reverse(path);// becase one computer starts at the other side
+            maze.setSolvingStrategy(new PrizeSearchAlgorithm());             
             path2 = maze.getSolutionPath();
 
             playerRow = playerCol = 0;           // Computer 1 starts at top-left
@@ -279,10 +276,6 @@ public class GameFrame extends JFrame implements KeyListener{
                         mat[computerRow][computerCol].getPrize().setCollected(true);
                         updateScoreBoard(0);
                     }
-
-                    // if(maze instanceof FogMaze ){
-                    //     ((FogMaze)maze).setComputerPlayerPosition(computerRow, computerCol);
-                    // } 
     
                     // Check if there are no moves left
                     if (path.isEmpty()) {
@@ -481,7 +474,7 @@ public class GameFrame extends JFrame implements KeyListener{
 
     public void createMaze(GameType type, int size){
         if(type == GameType.RACE) maze = new RaceMaze(size, new PrimsAlgorithm(), new DijkstraAlgorithm());
-        if(type == GameType.PRIZES) maze = new PrizeMaze(size, new PrimsAlgorithm(), new PrizeSearchAlgorithm());
+        if(type == GameType.PRIZES) maze = new PrizeMaze(size, new PrimsAlgorithm(), new BFSAlgorithm());
         if(type == GameType.Fog_OF_WAR) maze = new FogMaze(size, new DFSAlgorithm(), new RecursiveBacktracking());
     }
 
