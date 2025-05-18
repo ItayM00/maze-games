@@ -1,8 +1,6 @@
 package Yg_Final_Project;
 
-import javax.swing.JLabel;
-
-public class Cell extends JLabel{
+public class Cell{
 
     private int row;
     private int column;

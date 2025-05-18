@@ -247,6 +247,11 @@ public class GameFrame extends JFrame implements KeyListener{
         }
         
         // PLAYER_vs_COMPUTER Mode
+        if(maze instanceof PrizeMaze) {
+            maze.setSolvingStrategy(new PrizeSearchAlgorithm());
+            path = maze.getSolutionPath();
+        }
+
         computerTimer = new Timer(timerDelay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -473,7 +478,7 @@ public class GameFrame extends JFrame implements KeyListener{
     }
 
     public void createMaze(GameType type, int size){
-        if(type == GameType.RACE) maze = new RaceMaze(size, new PrimsAlgorithm(), new DijkstraAlgorithm());
+        if(type == GameType.RACE) maze = new RaceMaze(size, new DFSAlgorithm(), new DijkstraAlgorithm());
         if(type == GameType.PRIZES) maze = new PrizeMaze(size, new PrimsAlgorithm(), new BFSAlgorithm());
         if(type == GameType.Fog_OF_WAR) maze = new FogMaze(size, new DFSAlgorithm(), new RecursiveBacktracking());
     }
