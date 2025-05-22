@@ -2,7 +2,7 @@ package Yg_Final_Project.Mazes;
 
 import java.awt.*;
 
-import Yg_Final_Project.Cell;
+import Yg_Final_Project.base_classes.Cell;
 import Yg_Final_Project.generation_algorithms.MazeGenerationStrategy;
 import Yg_Final_Project.solving_algorithms.MazeSolvingStrategy;
 
@@ -45,15 +45,11 @@ public class RaceMaze extends Maze{
 
     public void drawCellBackground(Graphics g, Cell cell, int x, int y) {
         int curRow = cell.getRow(), curCol = cell.getColumn();
-        /*if (cell.getAlgoVisit() && GameFrame.getIsMazeSolved()) {
-            g.setColor(Color.GRAY);
-            g.fillRect(x, y, cellSize, cellSize);
-        } */
         if(( curRow == 0 && curCol == 0) || ( curRow == rowsNum - 1 && curCol == colsNum - 1)){
             g.setColor(Color.GRAY);
             g.fillRect(x , y, cellSize, cellSize);
         }
-        if (cell.getHumanVisit()) {
+        if (cell.getHumanVisit() || cell.getComputer2Visit()) {
             g.setColor(Color.GREEN);
             g.fillOval(x + cellSize / 4, y + cellSize / 4, cellSize / 2, cellSize / 2);
         } 

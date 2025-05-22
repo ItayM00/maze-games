@@ -1,4 +1,4 @@
-package Yg_Final_Project;
+package Yg_Final_Project.base_classes;
 
 public class Cell{
 
@@ -14,6 +14,7 @@ public class Cell{
     // if viseted by player / computer / algorithm
     private boolean humanVisit;
     private boolean computerVisit;
+    private boolean computer2Visit;
     private boolean algoVisit;
 
     // for fog mode
@@ -26,7 +27,7 @@ public class Cell{
         this.column = column;
 
         top = bottom = left = right = true;
-		humanVisit = computerVisit = algoVisit = discovred = false;
+		humanVisit = computerVisit = computer2Visit = algoVisit = discovred = false;
 
         this.prize = prize;
     }
@@ -56,6 +57,10 @@ public class Cell{
 
     public void setComputerVisit(boolean con){
         computerVisit = con;
+    }
+
+    public void setComputer2Visit(boolean computer2Visit) {
+        this.computer2Visit = computer2Visit;
     }
 
     public void setAlgoVisit(boolean con) {
@@ -102,6 +107,10 @@ public class Cell{
 
     public boolean getComputerVisit(){
         return computerVisit;
+    }
+
+    public boolean getComputer2Visit(){
+        return computer2Visit;
     }
 
     public boolean getAlgoVisit(){

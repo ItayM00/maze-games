@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import Yg_Final_Project.Cell;
 import Yg_Final_Project.Mazes.Maze;
+import Yg_Final_Project.base_classes.Cell;
 
 public class BFSAlgorithm implements MazeSolvingStrategy{
 
@@ -16,36 +16,8 @@ public class BFSAlgorithm implements MazeSolvingStrategy{
 
     @Override
     public void solveMaze(Cell[][] mat, Maze maze){
-        resetAlgoVisits(mat);
-
-        Queue<Cell> queue = new LinkedList<>();
-        Map<Cell, Cell> parentMap = new HashMap<>();
-
-        Cell start = mat[mat.length - 1][mat[0].length - 1];
-        start.setAlgoVisit(true);
-        queue.add(start);
-
-        while(!queue.isEmpty()){
-            Cell cur = queue.remove();
-        
-            ArrayList<Cell> list = getCellsWithoutAlgoVisit(cur.getRow(), cur.getColumn(), mat);
-        
-            for (Cell cell : list) {
-                if (!cell.getAlgoVisit()) {
-                    parentMap.put(cell, cur); // track path
-                    cell.setAlgoVisit(true);  // mark as visited for the path
-                    queue.add(cell);
-        
-                    // Goal check
-                    if (cell.getRow() == 0 && cell.getColumn() == 0) {
-                        markPath(cell, parentMap);
-                        maze.setSolutionPath(path);
-                        return;
-                    }
-                }
-            }
-        }
-        
+        path = solveFrom(mat, mat.length - 1, mat[0].length - 1, 0, 0);
+        maze.setSolutionPath(path);
     }
 
     // Get the son -> mark it -> get its parent from the hash map
@@ -83,6 +55,40 @@ public class BFSAlgorithm implements MazeSolvingStrategy{
                 mat[i][j].setAlgoVisit(false);
             }
         }
+    }
+
+    @Override
+    public List<Cell> solveFrom(Cell[][] mat, int startRow, int startCol, int goalRow, int goalCol){
+        resetAlgoVisits(mat);
+
+        Queue<Cell> queue = new LinkedList<>();
+        Map<Cell, Cell> parentMap = new HashMap<>();
+
+        Cell start = mat[startRow][startCol];
+        start.setAlgoVisit(true);
+        queue.add(start);
+
+        while(!queue.isEmpty()){
+            Cell cur = queue.remove();
+        
+            ArrayList<Cell> list = getCellsWithoutAlgoVisit(cur.getRow(), cur.getColumn(), mat);
+        
+            for (Cell cell : list) {
+                if (!cell.getAlgoVisit()) {
+                    parentMap.put(cell, cur); // track path
+                    cell.setAlgoVisit(true);  // mark as visited for the path
+                    queue.add(cell);
+        
+                    // Goal check
+                    if (cell.getRow() == goalRow && cell.getColumn() == goalCol) {
+                        markPath(cell, parentMap);
+                        return path;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     

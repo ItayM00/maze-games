@@ -4,17 +4,18 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.List;
 import java.util.ArrayList;
 
-import Yg_Final_Project.Cell;
-import Yg_Final_Project.Prize;
+import Yg_Final_Project.base_classes.Cell;
+import Yg_Final_Project.base_classes.Prize;
 import Yg_Final_Project.generation_algorithms.MazeGenerationStrategy;
 import Yg_Final_Project.solving_algorithms.MazeSolvingStrategy;
 import Yg_Final_Project.enums.PrizeType;
 
 public class PrizeMaze extends Maze{
 
-    private ArrayList<Prize> prizes;
+    private List<Prize> prizes;
     private int num_of_prizes = 15;
 
 
@@ -90,6 +91,10 @@ public class PrizeMaze extends Maze{
         return num_of_prizes;
     }
 
+    public List<Prize> getPrizes() {
+        return prizes;
+    }
+
 // --------------------------------------------------------------------------------
 
 @Override
@@ -126,7 +131,7 @@ public class PrizeMaze extends Maze{
             g.setColor(Color.GRAY);
             g.fillRect(x , y, cellSize, cellSize);
         }
-        if (cell.getHumanVisit()) {
+        if (cell.getHumanVisit() || cell.getComputer2Visit()) {
             g.setColor(Color.GREEN);
             g.fillOval(x + cellSize / 4, y + cellSize / 4, cellSize / 2, cellSize / 2);
         } 

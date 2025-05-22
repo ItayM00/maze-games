@@ -5,7 +5,7 @@ import javax.swing.*;
 
 import java.util.List;
 
-import Yg_Final_Project.Cell;
+import Yg_Final_Project.base_classes.Cell;
 import Yg_Final_Project.generation_algorithms.MazeGenerationStrategy;
 import Yg_Final_Project.solving_algorithms.MazeSolvingStrategy;
 
@@ -93,7 +93,6 @@ public class Maze extends JPanel
 
     public void setSolvingStrategy(MazeSolvingStrategy solvingStrategy) {
         this.solvingStrategy = solvingStrategy;
-        this.solvingStrategy.solveMaze(mat, this);
     }   
 
     public MazeSolvingStrategy getSolvingStrategy() {

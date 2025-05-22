@@ -1,8 +1,7 @@
 package Yg_Final_Project.solving_algorithms;
 
-import Yg_Final_Project.Cell;
-import Yg_Final_Project.Mazes.Maze;
-
+import Yg_Final_Project.Mazes.*;
+import Yg_Final_Project.base_classes.Cell;
 import java.util.*;
 
 public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
@@ -10,58 +9,11 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
     // Because it wouldnt be efficient to search for all the prizes in the maze
     // we will search for the closest one with BFS algorithm
     // after the computer player reaches it we will solve again 
-
-    private List<Cell> fullPath = new ArrayList<>();
     
     @Override
     public void solveMaze(Cell[][] mat, Maze maze) {
-        // Find all prizes in the maze
-        List<Cell> prizes = new ArrayList<>();
-        for (int i = 0; i < mat.length; i++) {
-            for (int j = 0; j < mat[0].length; j++) {
-                if (mat[i][j].getPrize() != null && !mat[i][j].getPrize().getIsCollected()) {
-                    prizes.add(mat[i][j]);
-                }
-            }
-        }
-        
-        System.out.println("Found " + prizes.size() + " prizes in the maze");
-        
-        // Start from the bottom-right corner
-        Cell currentPosition = mat[mat.length - 1][mat[0].length - 1];
-        
-        // Collect all prizes one by one
-        while (!prizes.isEmpty()) {
-            // Find the closest prize
-            Cell closestPrize = null;
-            List<Cell> bestPath = null;
-            
-            for (Cell prize : prizes) {
-                List<Cell> path = findPath(mat, currentPosition, prize);
-                if (path != null) {
-                    if (closestPrize == null || path.size() < bestPath.size()) {
-                        closestPrize = prize;
-                        bestPath = path;
-                    }
-                }
-            }
-            
-            if (closestPrize == null) {
-                System.out.println("Unable to reach any more prizes");
-                break;
-            }
-            
-            // Add this path to our full path
-            fullPath.addAll(bestPath);
-            
-            // Update current position and remove collected prize
-            currentPosition = closestPrize;
-            prizes.remove(closestPrize);
-        }
-        
-        System.out.println("Complete path calculated with " + fullPath.size() + " steps");
-        fullPath.addAll(findPath(mat, currentPosition, mat[0][0])); // using bfs to find exit after collecting all the prizes
-        maze.setSolutionPath(fullPath);
+        List<Cell> path = solveFrom(mat, mat.length - 1, mat[0].length - 1, 0, 0);
+        maze.setSolutionPath(path);
     }
     
     // Find a path from start to end using BFS
@@ -142,6 +94,48 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
         }
         
         return neighbors;
+    }
+
+    @Override
+    public List<Cell> solveFrom(Cell[][] mat, int startRow, int startCol, int goalRow, int goalCol) {
+        List<Cell> prizes = new ArrayList<>();
+        for (int i = 0; i < mat.length; i++) {
+            for (int j = 0; j < mat[0].length; j++) {
+                if (mat[i][j].getPrize() != null && !mat[i][j].getPrize().getIsCollected()) {
+                    prizes.add(mat[i][j]);
+                }
+            }
+        }
+        
+        System.out.println("Found " + prizes.size() + " prizes in the maze");
+        
+        Cell currentPosition = mat[startRow][startCol];
+        
+        while (!prizes.isEmpty()) {
+            // Find the closest prize
+            Cell closestPrizeCell = null;
+            List<Cell> bestPath = null;
+            
+            for (Cell prize : prizes) {
+                List<Cell> path = findPath(mat, currentPosition, prize);
+                if (path != null) {
+                    if (closestPrizeCell == null || path.size() < bestPath.size()) {
+                        closestPrizeCell = prize;
+                        bestPath = path;
+                    }
+                }
+            }
+            
+            if (closestPrizeCell == null) {
+                System.out.println("Unable to reach any more prizes");
+                break;
+            }
+            
+            return bestPath;
+        }
+
+        List<Cell> path = findPath(mat, currentPosition, mat[goalRow][goalCol]);
+        return path;
     }
     
 }

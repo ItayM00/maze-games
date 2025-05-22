@@ -1,8 +1,9 @@
 package Yg_Final_Project.generation_algorithms;
 
-import Yg_Final_Project.Cell;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import Yg_Final_Project.base_classes.Cell;
 
 public class DFSAlgorithm implements MazeGenerationStrategy{
 

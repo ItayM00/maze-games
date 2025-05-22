@@ -1,4 +1,4 @@
-package Yg_Final_Project;
+package Yg_Final_Project.base_classes;
 
 import Yg_Final_Project.enums.PrizeType;
 

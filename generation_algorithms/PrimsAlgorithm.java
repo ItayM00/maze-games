@@ -1,8 +1,9 @@
 package Yg_Final_Project.generation_algorithms;
 
-import Yg_Final_Project.Cell;
 import java.util.ArrayList;
 import java.util.Random;
+
+import Yg_Final_Project.base_classes.Cell;
 
 public class PrimsAlgorithm implements MazeGenerationStrategy {
     private Random random = new Random();

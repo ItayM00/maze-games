@@ -1,6 +1,8 @@
 package Yg_Final_Project;
 
 import Yg_Final_Project.Mazes.*;
+import Yg_Final_Project.base_classes.Cell;
+import Yg_Final_Project.base_classes.Prize;
 import Yg_Final_Project.generation_algorithms.*;
 import Yg_Final_Project.solving_algorithms.*;
 import Yg_Final_Project.enums.*;
@@ -8,22 +10,17 @@ import Yg_Final_Project.enums.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
-import java.util.Collections;
 
-public class GameFrame extends JFrame implements KeyListener{
+public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
 
     private Maze maze;
     private Cell[][] mat;
     private int size;
 
-    private List<Cell> path;
-    private List<Cell> path2;
-
     private int playerRow;
     private int playerCol;
-    private int computerRow;
-    private int computerCol;
+    private int player2Row;
+    private int player2Col;
 
     private int player1points = 0;
     private int player2points = 0;
@@ -32,11 +29,10 @@ public class GameFrame extends JFrame implements KeyListener{
     private PlayersType mode;
 
     private int seconds;
-    private int timerDelay;
     private Timer gameTimer;
-    private Timer computerTimer;
-    private Timer computerTimer2;
 
+    private ComputerPlayer computer1;
+    private ComputerPlayer computer2;
 
 // ---------------- Constructor ----------------------
 
@@ -58,10 +54,8 @@ public class GameFrame extends JFrame implements KeyListener{
         mat = maze.getMat();
 
         playerRow = playerCol = 0;
-        computerRow = mat.length - 1;
-        computerCol = mat[0].length - 1;
-
-        timerDelay = 350;
+        player2Row = mat.length - 1;
+        player2Col = mat[0].length - 1;
 
         labelForMiniGame(maze);
 
@@ -124,202 +118,42 @@ public class GameFrame extends JFrame implements KeyListener{
         if (mode == PlayersType.PLAYER_vs_PLAYER) {
             return;
         }
-
-        path = maze.getSolutionPath();
                 
-        if (mode == PlayersType.COMPUTER_vs_COMPUTER) {
-            Collections.reverse(path);// becase one computer starts at the other side
-            maze.setSolvingStrategy(new PrizeSearchAlgorithm());             
-            path2 = maze.getSolutionPath();
+        else if(mode == PlayersType.PLAYER_vs_COMPUTER){
+            System.out.println("mode: PLAYER_vs_COMPUTER");
+            Point goal1 = new Point(0, 0);
 
-            playerRow = playerCol = 0;           // Computer 1 starts at top-left
-            computerRow = mat.length - 1;        // Computer 2 starts at bottom-right
-            computerCol = mat[0].length - 1;
-            
-            // Mark initial positions
-            mat[playerRow][playerCol].setHumanVisit(true);
-            mat[computerRow][computerCol].setComputerVisit(true);
-            
-            computerTimer = new Timer(350, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        // Move computer 1 (using player variables)
-                        if (!path.isEmpty()) {
-                            // Clear current position
-                            mat[playerRow][playerCol].setHumanVisit(false);
-                            
-                            Cell nextCell1 = path.remove(0);
-                            playerRow = nextCell1.getRow();
-                            playerCol = nextCell1.getColumn();
-                            
-                            // Handle prize collection for computer 1
-                            if(maze instanceof PrizeMaze) {
-                                Prize prize = mat[playerRow][playerCol].getPrize();
-                                if(prize != null && !prize.getIsCollected()) {
-                                    player1points += prize.getPointsWorth();
-                                    prize.setCollected(true);
-                                    updateScoreBoard(1);
-                                }
-                            }
-                            
-                            mat[playerRow][playerCol].setHumanVisit(true);
-                            mat[playerRow][playerCol].setDiscovred(true);
-                            
-                            // Check if computer 1 reached goal (bottom-right)
-                            if (playerRow == mat.length - 1 && playerCol == mat[0].length - 1) {
-                                stopComputerMovement();
-                                if(maze instanceof RaceMaze) gameTimer.stop();
-                                printEndMessage(1); // Computer 1 won
-                                dispose();
-                                return;
-                            }
-                        }
-                        else{
-                            System.out.println("computer 1 path is empty...");
-                            computerTimer.stop();
-                            return;
-                        }
+            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal1, 3, 1000, new BFSAlgorithm());
 
-                        maze.repaint(); // Refresh GUI
-                    } catch (Exception ex) {
-                        System.out.println("Error in computer movement: " + ex.getMessage());
-                        ex.printStackTrace();
-                        computerTimer.stop();
-                    }
-                }
-            });
+            computer1.start();
+        }
 
-            computerTimer2 = new Timer(500, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {        
-                        // Move computer 2
-                        if (!path2.isEmpty()) {
-                            // Clear current position
-                            mat[computerRow][computerCol].setComputerVisit(false);
-                            
-                            Cell nextCell2 = path2.remove(0);
-                            computerRow = nextCell2.getRow();
-                            computerCol = nextCell2.getColumn();
-                            
-                            // Handle prize collection for computer 2
-                            if(maze instanceof PrizeMaze) {
-                                Prize prize = mat[computerRow][computerCol].getPrize();
-                                if(prize != null && !prize.getIsCollected()) {
-                                    player2points += prize.getPointsWorth();
-                                    prize.setCollected(true);
-                                    updateScoreBoard(0);
-                                }
-                            }
-                            
-                            mat[computerRow][computerCol].setComputerVisit(true);
-                            mat[computerRow][computerCol].setDiscovred(true);
-                            
-                            // Check if computer 2 reached goal (bottom-right)
-                            if (computerRow == 0 && computerCol == 0) {
-                                stopComputerMovement();
-                                if(maze instanceof RaceMaze) gameTimer.stop();
-                                printEndMessage(2); // Computer 2 won
-                                dispose();
-                                return;
-                            }
-                        }
-                        else{
-                            System.out.println("computer 2 path is empty...");
-                            computerTimer2.stop();
-                            return;
-                        }
-                        
-                        maze.repaint(); // Refresh GUI
-                    } catch (Exception ex) {
-                        System.out.println("Error in computer movement: " + ex.getMessage());
-                        ex.printStackTrace();
-                        computerTimer.stop();
-                    }
-                }
-            });
-            
-            computerTimer.start();
-            computerTimer2.start();
-            System.out.println("Both timer started...");
-            return;
+        else if (mode == PlayersType.COMPUTER_vs_COMPUTER) {
+            System.out.println("mode: COMPUTER_vs_COMPUTER");
+
+            Point goal1 = new Point(mat.length - 1, mat[0].length - 1);
+            Point goal2 = new Point(0, 0);
+
+            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal2, 1, 500, new BFSAlgorithm());
+            computer2 = new ComputerPlayer(this, maze, mat, 0, 0, goal1, 2, 500, new BFSAlgorithm());
+
+            computer1.start();
+            computer2.start();
         }
         
-        // PLAYER_vs_COMPUTER Mode
-        if(maze instanceof PrizeMaze) {
-            maze.setSolvingStrategy(new PrizeSearchAlgorithm());
-            path = maze.getSolutionPath();
-        }
-
-        computerTimer = new Timer(timerDelay, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    // Clear current position
-                    mat[computerRow][computerCol].setComputerVisit(false);
-
-                    Cell cur = path.remove(0);
-
-                    computerRow = cur.getRow();
-                    computerCol = cur.getColumn();
-    
-                    // Check if computer reached the goal (top-left corner)
-                    if (computerRow == 0 && computerCol == 0) {
-                        computerTimer.stop();
-                        if(maze instanceof RaceMaze) gameTimer.stop(); // Stop the game timer
-                        printEndMessage(3);
-                        dispose();
-                        return;
-                    }
-
-                    Prize curCompPrize = mat[computerRow][computerCol].getPrize();
-                    if(maze instanceof PrizeMaze && curCompPrize != null && !curCompPrize.getIsCollected()){
-                    
-                        System.out.println("computer collected prize... + " + curCompPrize.getPointsWorth() + " pts");
-                        player2points += curCompPrize.getPointsWorth();
-                        mat[computerRow][computerCol].getPrize().setCollected(true);
-                        updateScoreBoard(0);
-                    }
-    
-                    // Check if there are no moves left
-                    if (path.isEmpty()) {
-                        System.out.println("No more moves available. Stopping computer.");
-                        computerTimer.stop();
-                        return;
-                    }
-
-                    mat[computerRow][computerCol].setComputerVisit(true);
-                    mat[computerRow][computerCol].setDiscovred(true);
-                    maze.repaint(); // Refresh GUI   
-                    
-                    // changing the computer delay to make moves more believable
-                    // if(seconds % 5 == 0){
-                    //     timerDelay = (int) (Math.random() * 1500 + 350); 
-                    //     computerTimer.setDelay(timerDelay);
-                    //     System.out.println("timer delay is: " + timerDelay);
-                    // }
-    
-                } catch (Exception ex) {
-                    System.out.println("Error in computer movement: " + ex.getMessage());
-                    ex.printStackTrace();
-                    computerTimer.stop();
-                }
-            }
-        });
-    
-        computerTimer.start();
+        System.out.println("started computer movement");
     }
 
     public void stopComputerMovement() {
-        if (computerTimer != null && computerTimer.isRunning()) {
-            computerTimer.stop();
+        if (computer1 != null ) {
+            computer1.stop();
         }
-        if (computerTimer2 != null && computerTimer2.isRunning()) {
-            computerTimer2.stop();
+        if (computer2 != null) {
+            computer2.stop();
         }
     }
 
+    @Override
     public void updateScoreBoard(int id){
         switch (id) {
             case 0:
@@ -397,50 +231,45 @@ public class GameFrame extends JFrame implements KeyListener{
                     }
                     break;
                 case KeyEvent.VK_A: // Move left Key (a) 65
-                    if(mode == PlayersType.PLAYER_vs_PLAYER && computerCol > 0 && !mat[computerRow][computerCol].isLeftOn()){
-                        mat[computerRow][computerCol].setComputerVisit(false);
-                        computerCol--;
-                        mat[computerRow][computerCol].setDiscovred(true);
-                        mat[computerRow][computerCol].setComputerVisit(true);
+                    if(mode == PlayersType.PLAYER_vs_PLAYER && player2Col > 0 && !mat[player2Row][player2Col].isLeftOn()){
+                        mat[player2Row][player2Col].setComputerVisit(false);
+                        player2Col--;
+                        mat[player2Row][player2Col].setDiscovred(true);
+                        mat[player2Row][player2Col].setComputerVisit(true);
                     }
                     break;
                 case KeyEvent.VK_W: // Move up Key (w) 87
-                    if(mode == PlayersType.PLAYER_vs_PLAYER && computerRow > 0 && !mat[computerRow][computerCol].isTopOn()){
-                        mat[computerRow][computerCol].setComputerVisit(false);
-                        computerRow--;
-                        mat[computerRow][computerCol].setDiscovred(true);
-                        mat[computerRow][computerCol].setComputerVisit(true);
+                    if(mode == PlayersType.PLAYER_vs_PLAYER && player2Row > 0 && !mat[player2Row][player2Col].isTopOn()){
+                        mat[player2Row][player2Col].setComputerVisit(false);
+                        player2Row--;
+                        mat[player2Row][player2Col].setDiscovred(true);
+                        mat[player2Row][player2Col].setComputerVisit(true);
                     }
                     break;
                 case KeyEvent.VK_D: // Move right Key (d) 68
-                    if(mode == PlayersType.PLAYER_vs_PLAYER && computerCol < size - 1 && !mat[computerRow][computerCol].isRightOn()){
-                        mat[computerRow][computerCol].setComputerVisit(false);
-                        computerCol++;
-                        mat[computerRow][computerCol].setDiscovred(true);
-                        mat[computerRow][computerCol].setComputerVisit(true);
+                    if(mode == PlayersType.PLAYER_vs_PLAYER && player2Col < size - 1 && !mat[player2Row][player2Col].isRightOn()){
+                        mat[player2Row][player2Col].setComputerVisit(false);
+                        player2Col++;
+                        mat[player2Row][player2Col].setDiscovred(true);
+                        mat[player2Row][player2Col].setComputerVisit(true);
                     }
                     break;
                 case KeyEvent.VK_S: // Move down Key (s) 83
-                    if(mode == PlayersType.PLAYER_vs_PLAYER && computerRow < size - 1 && !mat[computerRow][computerCol].isBottomOn()){
-                        mat[computerRow][computerCol].setComputerVisit(false);
-                        computerRow++;
-                        mat[computerRow][computerCol].setDiscovred(true);
-                        mat[computerRow][computerCol].setComputerVisit(true);
+                    if(mode == PlayersType.PLAYER_vs_PLAYER && player2Row < size - 1 && !mat[player2Row][player2Col].isBottomOn()){
+                        mat[player2Row][player2Col].setComputerVisit(false);
+                        player2Row++;
+                        mat[player2Row][player2Col].setDiscovred(true);
+                        mat[player2Row][player2Col].setComputerVisit(true);
                     }
                     break;
                 }
                 maze.repaint();
 
-                // if(maze instanceof FogMaze ){
-                //     ((FogMaze)maze).setHumanPlayerPosition(playerRow, playerCol);
-                //     ((FogMaze)maze).setComputerPlayerPosition(computerRow, computerCol);
-                // } 
-
                 handleMoveBasedOnMode();
 
                 if(mat[mat.length - 1][mat[0].length - 1].getHumanVisit()) {
                     if(maze instanceof RaceMaze) gameTimer.stop();
-                    if(mode == PlayersType.PLAYER_vs_COMPUTER || mode == PlayersType.COMPUTER_vs_COMPUTER) stopComputerMovement();
+                    if(mode == PlayersType.PLAYER_vs_COMPUTER) stopComputerMovement();
                     printEndMessage(1);
                     this.dispose();
                 } else if(mat[0][0].getComputerVisit()) {
@@ -476,11 +305,17 @@ public class GameFrame extends JFrame implements KeyListener{
     public PlayersType getModePVP(){
         return mode;
     }
-
+    
     public void createMaze(GameType type, int size){
-        if(type == GameType.RACE) maze = new RaceMaze(size, new DFSAlgorithm(), new DijkstraAlgorithm());
-        if(type == GameType.PRIZES) maze = new PrizeMaze(size, new PrimsAlgorithm(), new BFSAlgorithm());
-        if(type == GameType.Fog_OF_WAR) maze = new FogMaze(size, new DFSAlgorithm(), new RecursiveBacktracking());
+        if(type == GameType.RACE) maze = new RaceMaze(size, new DFSAlgorithm(), new BFSAlgorithm());
+        if(type == GameType.PRIZES) maze = new PrizeMaze(size, new DFSAlgorithm(), new BFSAlgorithm());
+        if(type == GameType.Fog_OF_WAR) maze = new FogMaze(size, new DFSAlgorithm(), new BFSAlgorithm());
+    }
+    
+    @Override
+    public void addPoints(int playerIndex, int points) {
+        if(playerIndex == 1) this.player1points += points;
+        else if(playerIndex == 2) this.player2points += points;
     }
 
     public void handleMoveBasedOnMode(){
@@ -490,7 +325,7 @@ public class GameFrame extends JFrame implements KeyListener{
     
     public void handlePrizeMove(){
         Prize curPlayerPrize = mat[playerRow][playerCol].getPrize();
-        Prize curCompPrize = mat[computerRow][computerCol].getPrize();
+        Prize curCompPrize = mat[player2Row][player2Col].getPrize();
                 
         if(curPlayerPrize != null && !curPlayerPrize.getIsCollected()){
             System.out.println("player 1 collected prize... + " + curPlayerPrize.getPointsWorth() + " pts");
@@ -501,12 +336,12 @@ public class GameFrame extends JFrame implements KeyListener{
         if(curCompPrize != null && !curCompPrize.getIsCollected()){
             System.out.println("player 2 collected prize... + " + curCompPrize.getPointsWorth() + " pts");
             player2points += curCompPrize.getPointsWorth();
-            mat[computerRow][computerCol].getPrize().setCollected(true);
+            mat[player2Row][player2Col].getPrize().setCollected(true);
             updateScoreBoard(2);
         }
     }
 
-
+    @Override
     public void printEndMessage(int idFinished) {
         if (maze instanceof RaceMaze) {
             if (mode == PlayersType.COMPUTER_vs_COMPUTER) {
@@ -567,5 +402,6 @@ public class GameFrame extends JFrame implements KeyListener{
         }
         new MenuFrame();
     }
+
 
 }

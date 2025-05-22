@@ -1,6 +1,6 @@
 package Yg_Final_Project.generation_algorithms;
 
-import Yg_Final_Project.Cell;
+import Yg_Final_Project.base_classes.Cell;
 
 public interface MazeGenerationStrategy {
     

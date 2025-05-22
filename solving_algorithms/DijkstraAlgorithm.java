@@ -2,9 +2,9 @@ package Yg_Final_Project.solving_algorithms;
 
 import java.util.*;
 
-import Yg_Final_Project.Cell;
-import Yg_Final_Project.NodeData;
 import Yg_Final_Project.Mazes.Maze;
+import Yg_Final_Project.base_classes.Cell;
+import Yg_Final_Project.base_classes.NodeData;
 
 public class DijkstraAlgorithm implements MazeSolvingStrategy {
 
@@ -15,40 +15,8 @@ public class DijkstraAlgorithm implements MazeSolvingStrategy {
 
     @Override
     public void solveMaze(Cell[][] mat, Maze maze) {
-        clearStructs();
-        
-        Cell start = mat[mat.length - 1][mat[0].length - 1];
-
-        nodeDataMap.put(start, new NodeData(0, null));
-        openSet.add(start);
-
-        while(!openSet.isEmpty()){
-            Cell current = openSet.poll();
-
-            // if we reached the Goal
-            if(current.getRow() == 0 && current.getColumn() == 0){
-                buildPath(nodeDataMap, mat[0][0]);
-                maze.setSolutionPath(path);
-                return;
-            }
-
-            closedSet.add(current);
-
-            for (Cell neighbor : getNeighbors(current, mat)) {
-                if (!isAccessible(current, neighbor) || closedSet.contains(neighbor)) {
-                    continue; // Skip walls or already processed
-                }
-
-                int gCost = nodeDataMap.get(current).g + 1;
-
-                // If this neighbor is not in map or we found a better path:
-                if(!nodeDataMap.containsKey(neighbor) || gCost < nodeDataMap.get(neighbor).g){
-                    nodeDataMap.put(neighbor, new NodeData(gCost, current));
-                    openSet.add(neighbor);
-                }
-            }
-
-        }
+        path = solveFrom(mat, mat.length - 1, mat[0].length - 1, 0, 0);
+        maze.setSolutionPath(path);
     }
 
     private boolean isAccessible(Cell current, Cell neighbor) {
@@ -103,6 +71,45 @@ public class DijkstraAlgorithm implements MazeSolvingStrategy {
         nodeDataMap.clear();
         openSet.clear();
         closedSet.clear();
+    }
+
+    @Override
+    public List<Cell> solveFrom(Cell[][] mat, int startRow, int startCol, int goalRow, int goalCol) {
+        clearStructs();
+        
+        Cell start = mat[startRow][startCol];
+
+        nodeDataMap.put(start, new NodeData(0, null));
+        openSet.add(start);
+
+        while(!openSet.isEmpty()){
+            Cell current = openSet.poll();
+
+            // if we reached the Goal
+            if(current.getRow() == goalRow && current.getColumn() == goalCol){
+                buildPath(nodeDataMap, mat[0][0]);
+                return path;
+            }
+
+            closedSet.add(current);
+
+            for (Cell neighbor : getNeighbors(current, mat)) {
+                if (!isAccessible(current, neighbor) || closedSet.contains(neighbor)) {
+                    continue; // Skip walls or already processed
+                }
+
+                int gCost = nodeDataMap.get(current).g + 1;
+
+                // If this neighbor is not in map or we found a better path:
+                if(!nodeDataMap.containsKey(neighbor) || gCost < nodeDataMap.get(neighbor).g){
+                    nodeDataMap.put(neighbor, new NodeData(gCost, current));
+                    openSet.add(neighbor);
+                }
+            }
+
+        }
+
+        return null;
     }
     
 }

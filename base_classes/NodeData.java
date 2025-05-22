@@ -1,4 +1,4 @@
-package Yg_Final_Project;
+package Yg_Final_Project.base_classes;
 
 // Class helper for solving algorithms
 // in the future possible to add more attributes for A* algorithm

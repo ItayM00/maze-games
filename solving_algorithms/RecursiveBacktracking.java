@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import Yg_Final_Project.Cell;
 import Yg_Final_Project.Mazes.Maze;
+import Yg_Final_Project.base_classes.Cell;
 
 public class RecursiveBacktracking implements MazeSolvingStrategy{
 
@@ -14,8 +14,7 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
     @Override
     public void solveMaze(Cell[][] mat, Maze maze){
         resetAlgoVisits(mat);
-        System.out.println("Starting DFS from: " + (mat.length-1) + "," + (mat.length-1));
-        boolean result = moveDFSAlgorithm(mat.length-1, mat.length-1, mat);
+        boolean result = moveDFSAlgorithm(mat.length-1, mat.length-1, mat, 0, 0);
 
         if (result) {
             System.out.println("Path length: " + path.size());
@@ -27,11 +26,11 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
         System.out.println("DFS result: " + result);
     }
 
-    public boolean moveDFSAlgorithm(int row, int col, Cell[][] mat) {        
+    public boolean moveDFSAlgorithm(int row, int col, Cell[][] mat, int goalRow, int goalCol) {        
         Cell currentCell = mat[row][col];
         currentCell.setAlgoVisit(true);
         
-        if (row == 0 && col == 0) {
+        if (row == goalRow && col == goalCol) {
             path.add(currentCell);
             return true;
         }
@@ -43,7 +42,7 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
             int newCol = neighbor.getColumn();
                         
             if (!neighbor.getAlgoVisit()) {
-                if (moveDFSAlgorithm(newRow, newCol, mat)) {
+                if (moveDFSAlgorithm(newRow, newCol, mat, goalRow, goalCol)) {
                     path.add(currentCell);
                     return true;
                 }
@@ -76,6 +75,15 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
                 mat[i][j].setAlgoVisit(false);
             }
         }
+    }
+
+    @Override
+    public List<Cell> solveFrom(Cell[][] mat, int startRow, int startCol, int goalRow, int goalCol) {
+        moveDFSAlgorithm(startRow, startCol, mat, goalRow, goalCol);
+
+        System.out.println("done with dfs");
+
+        return path;
     }
 
 }
