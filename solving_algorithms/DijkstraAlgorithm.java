@@ -87,7 +87,7 @@ public class DijkstraAlgorithm implements MazeSolvingStrategy {
 
             // if we reached the Goal
             if(current.getRow() == goalRow && current.getColumn() == goalCol){
-                buildPath(nodeDataMap, mat[0][0]);
+                buildPath(nodeDataMap, mat[goalRow][goalCol]);
                 return path;
             }
 

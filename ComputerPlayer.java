@@ -1,12 +1,15 @@
 package Yg_Final_Project;
 
+import java.util.Collections;
 import java.util.List;
+
 import javax.swing.SwingUtilities;
 import Yg_Final_Project.Mazes.Maze;
 import Yg_Final_Project.Mazes.PrizeMaze;
 import Yg_Final_Project.base_classes.Cell;
 import Yg_Final_Project.base_classes.Prize;
 import Yg_Final_Project.solving_algorithms.MazeSolvingStrategy;
+import Yg_Final_Project.solving_algorithms.RecursiveBacktracking;
 
 import java.awt.Point;
 
@@ -61,8 +64,11 @@ public class ComputerPlayer implements Runnable{
                     stop();
                     break;
                 }
+                if(strategy instanceof RecursiveBacktracking && playerIndex != 2){
+                    Collections.reverse(path);
+                }
 
-                Cell next = path.get(0);
+                Cell next = path.get(1);
                 int nextRow = next.getRow();
                 int nextCol = next.getColumn();
 
@@ -97,7 +103,6 @@ public class ComputerPlayer implements Runnable{
                     SwingUtilities.invokeLater(() -> {
                         handler.printEndMessage(playerIndex);
                         handler.dispose();
-                        new MenuFrame();
                     });
                     break;
                 }

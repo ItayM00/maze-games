@@ -59,13 +59,16 @@ public class BFSAlgorithm implements MazeSolvingStrategy{
 
     @Override
     public List<Cell> solveFrom(Cell[][] mat, int startRow, int startCol, int goalRow, int goalCol){
+        // System.out.println("solving from: " + startRow + "," + startCol + ". to: " + goalRow + "," + goalCol);
         resetAlgoVisits(mat);
 
         Queue<Cell> queue = new LinkedList<>();
         Map<Cell, Cell> parentMap = new HashMap<>();
+        boolean[][] visitedMat = new boolean[mat.length][mat[0].length];
 
         Cell start = mat[startRow][startCol];
-        start.setAlgoVisit(true);
+        visitedMat[startRow][startCol] = true;
+        // start.setAlgoVisit(true);
         queue.add(start);
 
         while(!queue.isEmpty()){
@@ -74,9 +77,11 @@ public class BFSAlgorithm implements MazeSolvingStrategy{
             ArrayList<Cell> list = getCellsWithoutAlgoVisit(cur.getRow(), cur.getColumn(), mat);
         
             for (Cell cell : list) {
-                if (!cell.getAlgoVisit()) {
+                int r = cell.getRow(), c = cell.getColumn();
+                if (!visitedMat[r][c]) {
                     parentMap.put(cell, cur); // track path
-                    cell.setAlgoVisit(true);  // mark as visited for the path
+                    visitedMat[r][c] = true;
+                    // cell.setAlgoVisit(true);  // mark as visited for the path
                     queue.add(cell);
         
                     // Goal check

@@ -63,11 +63,14 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
         this.setVisible(true);
         
         if(mode != PlayersType.COMPUTER_vs_COMPUTER) this.addKeyListener(this);
+        if(mode == PlayersType.COMPUTER_vs_COMPUTER) {
+            mat[0][0].setHumanVisit(false);
+            mat[0][0].setComputer2Visit(true);
+        }
         if(mode == PlayersType.PLAYER_vs_COMPUTER || mode == PlayersType.COMPUTER_vs_COMPUTER) startComputerMovement();
     }
 
 // ------------------ GUI Based On Mode Methods -----------------------------
-
 
     public JLabel setTimerLabel(){
         JLabel label = new JLabel("Time: 0s");
@@ -123,7 +126,7 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
             System.out.println("mode: PLAYER_vs_COMPUTER");
             Point goal1 = new Point(0, 0);
 
-            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal1, 3, 1000, new BFSAlgorithm());
+            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal1, 3, 400, new BFSAlgorithm());
 
             computer1.start();
         }
@@ -135,7 +138,7 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
             Point goal2 = new Point(0, 0);
 
             computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal2, 1, 500, new BFSAlgorithm());
-            computer2 = new ComputerPlayer(this, maze, mat, 0, 0, goal1, 2, 500, new BFSAlgorithm());
+            computer2 = new ComputerPlayer(this, maze, mat, 0, 0, goal1, 2, 500, new DijkstraAlgorithm());
 
             computer1.start();
             computer2.start();
@@ -164,6 +167,9 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
                 break;
             case 2:
                 label2Points.setText("player 2: " + (player2points) + " pts");
+                break;
+            case 3:
+                label2Points.setText("computer: " + (player2points) + " pts");
                 break;
         }
     }
@@ -307,15 +313,15 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
     }
     
     public void createMaze(GameType type, int size){
-        if(type == GameType.RACE) maze = new RaceMaze(size, new DFSAlgorithm(), new BFSAlgorithm());
-        if(type == GameType.PRIZES) maze = new PrizeMaze(size, new DFSAlgorithm(), new BFSAlgorithm());
+        if(type == GameType.RACE) maze = new RaceMaze(size, new PrimsAlgorithm(), new BFSAlgorithm());
+        if(type == GameType.PRIZES) maze = new PrizeMaze(size, new PrimsAlgorithm(), new BFSAlgorithm());
         if(type == GameType.Fog_OF_WAR) maze = new FogMaze(size, new DFSAlgorithm(), new BFSAlgorithm());
     }
     
     @Override
     public void addPoints(int playerIndex, int points) {
         if(playerIndex == 1) this.player1points += points;
-        else if(playerIndex == 2) this.player2points += points;
+        else this.player2points += points;
     }
 
     public void handleMoveBasedOnMode(){
@@ -329,13 +335,13 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
                 
         if(curPlayerPrize != null && !curPlayerPrize.getIsCollected()){
             System.out.println("player 1 collected prize... + " + curPlayerPrize.getPointsWorth() + " pts");
-            player1points += curPlayerPrize.getPointsWorth();
+            addPoints(1, curPlayerPrize.getPointsWorth());
             mat[playerRow][playerCol].getPrize().setCollected(true);
             updateScoreBoard(1);
         }
         if(curCompPrize != null && !curCompPrize.getIsCollected()){
             System.out.println("player 2 collected prize... + " + curCompPrize.getPointsWorth() + " pts");
-            player2points += curCompPrize.getPointsWorth();
+            addPoints(2, curPlayerPrize.getPointsWorth());
             mat[player2Row][player2Col].getPrize().setCollected(true);
             updateScoreBoard(2);
         }
@@ -343,12 +349,15 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
 
     @Override
     public void printEndMessage(int idFinished) {
+        if(maze instanceof RaceMaze) gameTimer.stop();
+        if(mode != PlayersType.PLAYER_vs_PLAYER) stopComputerMovement();
+
         if (maze instanceof RaceMaze) {
             if (mode == PlayersType.COMPUTER_vs_COMPUTER) {
                 if (idFinished == 1) {
-                    JOptionPane.showMessageDialog(null, "Computer 1 (BFS) finished in " + seconds + "s", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Computer 1 finished in " + seconds + "s", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 } else if (idFinished == 2) {
-                    JOptionPane.showMessageDialog(null, "Computer 2 (DFS) finished in " + seconds + "s", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Computer 2 finished in " + seconds + "s", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
                 if (idFinished == 1) {
@@ -364,9 +373,9 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
         if (maze instanceof PrizeMaze) {
             if (mode == PlayersType.COMPUTER_vs_COMPUTER) {
                 if (player1points > player2points) {
-                    JOptionPane.showMessageDialog(null, "Computer 1 (BFS) won with " + player1points + " points", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Computer 1 won with " + player1points + " points", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 } else if (player1points < player2points) {
-                    JOptionPane.showMessageDialog(null, "Computer 2 (DFS) won with " + player2points + " points", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Computer 2  won with " + player2points + " points", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     JOptionPane.showMessageDialog(null, "It's a tie! Both computers scored " + player1points + " points", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -385,9 +394,9 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
         if (maze instanceof FogMaze) {
             if (mode == PlayersType.COMPUTER_vs_COMPUTER) {
                 if (idFinished == 1) {
-                    JOptionPane.showMessageDialog(null, "Computer 1 (BFS) finished the dark maze", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Computer 1 finished the dark maze", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 } else if (idFinished == 2) {
-                    JOptionPane.showMessageDialog(null, "Computer 2 (DFS) finished the dark maze", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Computer 2 finished the dark maze", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
                 // Existing fog maze message code
@@ -400,6 +409,7 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
                 }
             }
         }
+
         new MenuFrame();
     }
 

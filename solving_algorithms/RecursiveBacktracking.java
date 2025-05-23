@@ -10,10 +10,13 @@ import Yg_Final_Project.base_classes.Cell;
 public class RecursiveBacktracking implements MazeSolvingStrategy{
 
     private List<Cell> path = new ArrayList<>();
+    private boolean[][] visitedMat;
 
     @Override
     public void solveMaze(Cell[][] mat, Maze maze){
-        resetAlgoVisits(mat);
+        visitedMat = new boolean[mat.length][mat[0].length];
+        resetMatVisits();
+        
         boolean result = moveDFSAlgorithm(mat.length-1, mat.length-1, mat, 0, 0);
 
         if (result) {
@@ -21,14 +24,12 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
             Collections.reverse(path); // reverse the path for easier extruction for a move
             maze.setSolutionPath(path); 
         }
-
-        // Print the maze after DFS
-        System.out.println("DFS result: " + result);
     }
 
     public boolean moveDFSAlgorithm(int row, int col, Cell[][] mat, int goalRow, int goalCol) {        
         Cell currentCell = mat[row][col];
-        currentCell.setAlgoVisit(true);
+        visitedMat[row][col] = true;
+        // currentCell.setAlgoVisit(true);
         
         if (row == goalRow && col == goalCol) {
             path.add(currentCell);
@@ -41,7 +42,7 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
             int newRow = neighbor.getRow();
             int newCol = neighbor.getColumn();
                         
-            if (!neighbor.getAlgoVisit()) {
+            if (!visitedMat[newRow][newCol]) {
                 if (moveDFSAlgorithm(newRow, newCol, mat, goalRow, goalCol)) {
                     path.add(currentCell);
                     return true;
@@ -49,7 +50,8 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
             }
         }
 
-        currentCell.setAlgoVisit(false);
+        visitedMat[row][col] = false;
+        // currentCell.setAlgoVisit(false);
         return false;
     }
 
@@ -58,30 +60,31 @@ public class RecursiveBacktracking implements MazeSolvingStrategy{
         Cell current = mat[i][j];
         
         // Check up
-        if (i > 0 && !mat[i - 1][j].getAlgoVisit() && !current.isTopOn() && !mat[i-1][j].isBottomOn()){validCells.add(mat[i - 1][j]);}   
+        if (i > 0 && !visitedMat[i - 1][j] && !current.isTopOn() && !mat[i-1][j].isBottomOn()){validCells.add(mat[i - 1][j]);}   
         // Check down
-        if (i < mat.length - 1 && !mat[i + 1][j].getAlgoVisit() && !current.isBottomOn() && !mat[i+1][j].isTopOn()) { validCells.add(mat[i + 1][j]); }
+        if (i < mat.length - 1 && !visitedMat[i + 1][j] && !current.isBottomOn() && !mat[i+1][j].isTopOn()) { validCells.add(mat[i + 1][j]); }
         // Check left
-        if (j > 0 && !mat[i][j - 1].getAlgoVisit() && !current.isLeftOn() && !mat[i][j-1].isRightOn()) { validCells.add(mat[i][j - 1]); }
+        if (j > 0 && !visitedMat[i][j - 1]&& !current.isLeftOn() && !mat[i][j-1].isRightOn()) { validCells.add(mat[i][j - 1]); }
         // Check right
-        if (j < mat[0].length - 1 && !mat[i][j + 1].getAlgoVisit() && !current.isRightOn() && !mat[i][j+1].isLeftOn()) { validCells.add(mat[i][j + 1]); }
+        if (j < mat[0].length - 1 && !visitedMat[i][j + 1] && !current.isRightOn() && !mat[i][j+1].isLeftOn()) { validCells.add(mat[i][j + 1]); }
         
         return validCells;
     }
     
-    public void resetAlgoVisits(Cell[][] mat){
-        for (int i = 0; i < mat.length; i++) {
-            for (int j = 0; j < mat[0].length; j++) {
-                mat[i][j].setAlgoVisit(false);
+    public void resetMatVisits(){
+        for (int i = 0; i < visitedMat.length; i++) {
+            for (int j = 0; j < visitedMat[0].length; j++) {
+                visitedMat[i][j] = false;
             }
         }
     }
 
     @Override
     public List<Cell> solveFrom(Cell[][] mat, int startRow, int startCol, int goalRow, int goalCol) {
-        moveDFSAlgorithm(startRow, startCol, mat, goalRow, goalCol);
+        visitedMat = new boolean[mat.length][mat[0].length];
+        resetMatVisits();
 
-        System.out.println("done with dfs");
+        moveDFSAlgorithm(startRow, startCol, mat, goalRow, goalCol);
 
         return path;
     }

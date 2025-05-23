@@ -9,6 +9,8 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
     // Because it wouldnt be efficient to search for all the prizes in the maze
     // we will search for the closest one with BFS algorithm
     // after the computer player reaches it we will solve again 
+
+    private boolean[][] visitedMat;
     
     @Override
     public void solveMaze(Cell[][] mat, Maze maze) {
@@ -19,17 +21,13 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
     // Find a path from start to end using BFS
     private List<Cell> findPath(Cell[][] mat, Cell start, Cell end) {
         // Reset algorithm visit flags
-        for (int i = 0; i < mat.length; i++) {
-            for (int j = 0; j < mat[0].length; j++) {
-                mat[i][j].setAlgoVisit(false);
-            }
-        }
+        resetMatVisits();
         
         Queue<Cell> queue = new LinkedList<>();
         Map<Cell, Cell> parentMap = new HashMap<>();
         
         queue.add(start);
-        start.setAlgoVisit(true);
+        visitedMat[start.getRow()][start.getColumn()] = true;
         
         while (!queue.isEmpty()) {
             Cell current = queue.poll();
@@ -42,16 +40,19 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
             ArrayList<Cell> neighbors = getNeighbors(current, mat);
             
             for (Cell neighbor : neighbors) {
-                if (!neighbor.getAlgoVisit()) {
+                int r = neighbor.getRow(), c = neighbor.getColumn();
+
+                if (!visitedMat[r][c]) {
                     queue.add(neighbor);
-                    neighbor.setAlgoVisit(true);
+                    visitedMat[r][c] = true;
                     parentMap.put(neighbor, current);
                 }
             }
         }
         
         // If we can't find a path to the end
-        if (!end.getAlgoVisit()) {
+        int r = end.getRow(), c = end.getColumn();
+        if (!visitedMat[r][c]) {
             return null;
         }
         
@@ -63,8 +64,18 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
             path.add(0, current);
             current = parentMap.get(current);
         }
+
+        path.add(0, start);
         
         return path;
+    }
+
+    private void resetMatVisits(){
+        for (int i = 0; i < visitedMat.length; i++) {
+            for (int j = 0; j < visitedMat[0].length; j++) {
+                visitedMat[i][j] = false;
+            }
+        }
     }
     
     // Get valid neighbors (cells we can move to)
@@ -99,6 +110,8 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
     @Override
     public List<Cell> solveFrom(Cell[][] mat, int startRow, int startCol, int goalRow, int goalCol) {
         List<Cell> prizes = new ArrayList<>();
+        visitedMat = new boolean[mat.length][mat[0].length];
+
         for (int i = 0; i < mat.length; i++) {
             for (int j = 0; j < mat[0].length; j++) {
                 if (mat[i][j].getPrize() != null && !mat[i][j].getPrize().getIsCollected()) {
@@ -107,7 +120,7 @@ public class PrizeSearchAlgorithm implements MazeSolvingStrategy{
             }
         }
         
-        System.out.println("Found " + prizes.size() + " prizes in the maze");
+        // System.out.println("Found " + prizes.size() + " prizes in the maze");
         
         Cell currentPosition = mat[startRow][startCol];
         

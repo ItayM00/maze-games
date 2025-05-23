@@ -42,7 +42,6 @@ public class Maze extends JPanel
         generationStrategy.generateMaze(mat);
 
         this.solvingStrategy = solvingStrategy;
-        solvingStrategy.solveMaze(mat, this);
 	}
 
 

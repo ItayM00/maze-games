@@ -41,7 +41,7 @@ public class PrizeMaze extends Maze{
             do {
                 row = (int) (Math.random() * size);
                 col = (int) (Math.random() * size);
-            } while (prizespots[row][col]);
+            } while (prizespots[row][col] || (row == 0 && col == 0) || (row == size - 1 && col == size - 1));
 
             prizespots[row][col] = true;
             
