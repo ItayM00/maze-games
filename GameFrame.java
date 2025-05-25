@@ -27,6 +27,7 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
     private JLabel label1Points, label2Points;
 
     private PlayersType mode;
+    private GameType gameType;
 
     private int seconds;
     private Timer gameTimer;
@@ -49,6 +50,7 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
 
         this.size = size;
         this.mode = mode;
+        this.gameType = type;
         
         createMaze(type, size);
         mat = maze.getMat();
@@ -126,7 +128,9 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
             System.out.println("mode: PLAYER_vs_COMPUTER");
             Point goal1 = new Point(0, 0);
 
-            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal1, 3, 400, new BFSAlgorithm());
+            MazeSolvingStrategy solvingStrategy = (gameType == GameType.PRIZES) ? new PrizeSearchAlgorithm() : new BFSAlgorithm();
+
+            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal1, 3, 400, solvingStrategy);
 
             computer1.start();
         }
@@ -137,8 +141,19 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
             Point goal1 = new Point(mat.length - 1, mat[0].length - 1);
             Point goal2 = new Point(0, 0);
 
-            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal2, 1, 500, new BFSAlgorithm());
-            computer2 = new ComputerPlayer(this, maze, mat, 0, 0, goal1, 2, 500, new DijkstraAlgorithm());
+            MazeSolvingStrategy solvingStrategy1, solvingStrategy2;
+
+            if(gameType == GameType.PRIZES){
+                solvingStrategy1 = new PrizeSearchAlgorithm();
+                solvingStrategy2 = new PrizeSearchAlgorithm();
+            }
+            else{
+                solvingStrategy1 = new BFSAlgorithm();
+                solvingStrategy2 = new DijkstraAlgorithm();
+            }
+
+            computer1 = new ComputerPlayer(this, maze, mat, mat.length - 1, mat[0].length - 1, goal2, 1, 500, solvingStrategy1);
+            computer2 = new ComputerPlayer(this, maze, mat, 0, 0, goal1, 2, 450, solvingStrategy2);
 
             computer1.start();
             computer2.start();
@@ -313,9 +328,17 @@ public class GameFrame extends JFrame implements KeyListener, GameEventHandler{
     }
     
     public void createMaze(GameType type, int size){
-        if(type == GameType.RACE) maze = new RaceMaze(size, new PrimsAlgorithm(), new BFSAlgorithm());
-        if(type == GameType.PRIZES) maze = new PrizeMaze(size, new PrimsAlgorithm(), new BFSAlgorithm());
-        if(type == GameType.Fog_OF_WAR) maze = new FogMaze(size, new DFSAlgorithm(), new BFSAlgorithm());
+        MazeGenerationStrategy generationStrategy = (size < 20) ? new PrimsAlgorithm() : new DFSAlgorithm();
+
+        if(type == GameType.RACE){
+            maze = new RaceMaze(size, generationStrategy, new BFSAlgorithm());
+        } 
+        if(type == GameType.PRIZES){
+            maze = new PrizeMaze(size, generationStrategy, new BFSAlgorithm());
+        } 
+        if(type == GameType.Fog_OF_WAR){
+            maze = new FogMaze(size, generationStrategy, new BFSAlgorithm());
+        } 
     }
     
     @Override
